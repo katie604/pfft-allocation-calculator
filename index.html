@@ -149,6 +149,12 @@
     <h2>This week's allocation</h2>
     <p class="hint">Grab the balance sitting in your Income account and enter it here.</p>
 
+    <div class="fld" id="builderFld" style="display:none;margin-bottom:14px">
+      <label for="builderName" style="display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Your business name</label>
+      <input type="text" id="builderName" placeholder="e.g. Nathan Builds" autocomplete="off"
+        style="width:100%;max-width:320px;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;color:var(--navy)">
+    </div>
+
     <div class="income-in">
       <div class="fld">
         <label for="incomeBal">1. Income account balance</label>
@@ -231,6 +237,32 @@
     {key:"opex",     name:"7. Operating Expenses (Opex)",desc:"Overheads & running costs", color:"#57a583"}
   ];
   var STORE_KEY = "pfft-pf-alloc-v2";   // <-- Phase 2: the agent writes percentages into this same slot
+
+  // ---- Phase 2 capture: post each completed allocation to the store ----
+  // ENDPOINT = the Apps Script Web App /exec URL (paste after deploying - see SETUP.md).
+  // TOKEN must match the TOKEN in Code.gs. It's a spam gate, not real secrecy
+  // (it's visible in this client-side source), so treat it as a low-bar filter only.
+  var ENDPOINT = "https://script.google.com/macros/s/AKfycbyTxpITTWp2WVfLVGJxpdHNnKEuOaG_xCPsFY8Ag36DEF72AfIXWkh1qY8G88naXi2_/exec";
+  var TOKEN    = "88d81e4b01adae4478b864f9b46f7912746dee661195c473";
+  var LOG_KEY  = "pfft-pf-alloc-log";   // durable local backup of every logged allocation
+
+  // Identity = unique link per builder: ...?b=<slug>. No slug -> show a name field.
+  var BUILDER = "";
+  try { BUILDER = new URLSearchParams(location.search).get("b") || ""; } catch(e){}
+  var builderFld  = document.getElementById("builderFld");
+  var builderName = document.getElementById("builderName");
+  if(!BUILDER){
+    builderFld.style.display = "block";
+    try{ builderName.value = localStorage.getItem("pfft-pf-alloc-builder") || ""; }catch(e){}
+  }
+  function resolveBuilder(){
+    if(BUILDER) return BUILDER;
+    var v = (builderName.value||"").trim();
+    if(v){ try{ localStorage.setItem("pfft-pf-alloc-builder", v); }catch(e){} }
+    return v || "unknown";
+  }
+
+  var lastAlloc = null;   // set at the end of every calc(), read on the "completed" tap
 
   var topRows=document.getElementById("topRows"), rrRows=document.getElementById("rrRows");
   var sumBar=document.getElementById("sumBar"), sumVal=document.getElementById("sumVal");
@@ -373,10 +405,46 @@
         resNote.innerHTML="A few cents (<b>"+money(leftover)+"</b>) rounding - sweep it into Profit or leave as a buffer. Real Revenue this week: <b>"+money(realRev)+"</b>.";
       }
     }
+    // snapshot this week's allocation for the "completed" tap to log
+    lastAlloc = {
+      income: r2(bal),
+      realRev: realRev,
+      totalMoved: totalMoved,
+      pcts: {
+        bas: 10, matsubs: msPct,
+        profit: pctFor("profit"), ownerspay: pctFor("ownerspay"),
+        tax: pctFor("tax"), opex: pctFor("opex")
+      },
+      transfers: moves.map(function(m){ return {ref:"1-"+m.n, name:m.name, amt:m.amt}; })
+    };
+
     results.style.display="block";
   }
   calcBtn.addEventListener("click",calc);
   incomeBal.addEventListener("keydown",function(e){if(e.key==="Enter"){calc();}});
+
+  // durable local backup - nothing is ever lost even if the POST silently fails
+  function stashLocal(payload){
+    try{
+      var log; try{ log=JSON.parse(localStorage.getItem(LOG_KEY)||"[]"); }catch(e){ log=[]; }
+      log.push(payload);
+      localStorage.setItem(LOG_KEY, JSON.stringify(log));
+    }catch(e){}
+  }
+
+  // fire-and-forget to the store. no-cors keeps it simple (we don't read the
+  // response) and non-blocking - the green "done" confirmation fires regardless.
+  function postAllocation(payload){
+    if(!ENDPOINT || ENDPOINT.indexOf("PASTE_")===0) return;   // not wired yet
+    try{
+      fetch(ENDPOINT,{
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},   // avoids CORS preflight
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    }catch(e){}
+  }
 
   doneBtn.addEventListener("click",function(){
     doneBtn.classList.add("done");
@@ -387,6 +455,24 @@
     doneMsg.innerHTML="✓ Nice work - you're allocated for the week. Logged "+stamp+".";
     doneMsg.classList.add("show");
     try{localStorage.setItem("pfft-pf-alloc-lastdone",now.toISOString());}catch(e){}
+
+    // ---- Phase 2: log this allocation to the store ----
+    if(lastAlloc){
+      var payload={
+        token: TOKEN,
+        builder: resolveBuilder(),
+        loggedAt: now.toISOString(),
+        allocDate: stamp,
+        income: lastAlloc.income,
+        realRev: lastAlloc.realRev,
+        totalMoved: lastAlloc.totalMoved,
+        pcts: lastAlloc.pcts,
+        transfers: lastAlloc.transfers,
+        source: "calculator"
+      };
+      stashLocal(payload);     // always keep a local copy first
+      postAllocation(payload); // then send it up
+    }
   });
 
   refreshSum();
