@@ -69,9 +69,10 @@
   .res-right{flex:1;min-width:238px}
   .col-h{font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--gold-mut);margin:0 0 8px}
   .col-h.instr{text-transform:none;letter-spacing:0;font-size:13px;line-height:1.4;color:var(--navy)}
-  .tf-head{display:flex;justify-content:space-between;gap:12px;margin:2px 0 7px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gold-mut)}
-  .tf-head span:first-child{max-width:56%}
-  .tf-head span:last-child{text-align:right;flex:0 0 auto}
+  .tf-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:2px 0 7px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gold-mut);line-height:1.35}
+  .tf-head .tf-desc{max-width:56%}
+  .tf-head .tf-amt{text-align:right;flex:0 0 auto}
+  .tf-head .arr{font-size:14px;line-height:1;color:var(--navy)}
   .transfer{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #efe9d8;border-left:4px solid #ccc;background:#fff}
   .transfer:first-child{border-top:1px solid #efe9d8}
   .transfer .ref{background:var(--navy);color:#fff;font-weight:800;font-size:12px;padding:4px 7px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -186,8 +187,8 @@
         <div class="res-right">
           <div class="col-h instr">Over in your internet banking, set up each transfer like this:</div>
           <div class="tf-head">
-            <span>Use the blue box as your payment description</span>
-            <span>Transfer these exact amounts</span>
+            <span class="tf-desc">Use this <span class="arr">&#8595;</span> as your payment description</span>
+            <span class="tf-amt">Transfer these<br>exact amounts<br><span class="arr">&#8595;</span></span>
           </div>
           <div id="transfers"></div>
           <button class="btn done-btn" id="doneBtn">Press when bank transfers have been completed</button>
