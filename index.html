@@ -332,7 +332,7 @@
   // on any device (iPhone/Safari included) where a third-party iframe can't store.
   // e.g. ...?b=nathan&matsubs=20&profit=5&ownerspay=50&tax=15&opex=30
   function applyUrlPcts(){
-    var q; try{q=new URLSearchParams(location.search);}catch(e){return;}
+    var q; try{q=new URLSearchParams(location.search);}catch(e){return false;}
     var any=false;
     ["matsubs","profit","ownerspay","tax","opex"].forEach(function(k){
       if(q.has(k)){
@@ -341,6 +341,34 @@
       }
     });
     if(any){ refreshSum(); try{save();}catch(e){} savedNote.classList.remove("show"); }
+    return any;
+  }
+
+  // Read this builder's coached %s from the store by slug (JSONP dodges CORS).
+  // A stable ?b=slug link always loads the CURRENT %s Katie pushed from the
+  // assessment - so approving a new assessment updates the builder's calculator
+  // without ever changing their link.
+  function applyStorePcts(slug){
+    if(!ENDPOINT || ENDPOINT.indexOf("PASTE_")===0) return;
+    var cb="__pfPcts_"+Math.floor(Math.random()*1e9);
+    var s=document.createElement("script");
+    function cleanup(){ try{delete window[cb];}catch(e){window[cb]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); }
+    window[cb]=function(resp){
+      if(resp&&resp.ok&&resp.pcts){
+        var p=resp.pcts;
+        ["matsubs","profit","ownerspay","tax","opex"].forEach(function(k){
+          if(p[k]!==undefined&&p[k]!==null&&p[k]!==""){
+            var el=document.querySelector('input[data-key="'+k+'"]');
+            if(el) el.value=p[k];
+          }
+        });
+        refreshSum(); try{save();}catch(e){} savedNote.classList.remove("show");
+      }
+      cleanup();
+    };
+    s.onerror=cleanup;
+    s.src=ENDPOINT+(ENDPOINT.indexOf("?")>=0?"&":"?")+"b="+encodeURIComponent(slug)+"&callback="+cb;
+    document.head.appendChild(s);
   }
   saveBtn.addEventListener("click",save);
 
@@ -500,7 +528,10 @@
 
   refreshSum();
   load();
-  applyUrlPcts();   // link-baked percentages override saved ones (holds on any device)
+  var urlHadPcts = applyUrlPcts();     // %s baked in the link win (explicit override)
+  if(!urlHadPcts && BUILDER){          // stable ?b=slug link -> pull current %s from the store
+    applyStorePcts(BUILDER);
+  }
 })();
 </script>
 </body>
