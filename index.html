@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Profit First Allocation Calculator</title>
+<style>
+  :root{
+    --navy:#0F1F3A;
+    --cream:#ECE7D8;
+    --cream-lt:#F3ECD8;
+    --gold:#E8A93C;
+    --gold-mut:#8A6D2F;
+    --ink:#22252b;
+    --line:#d9d2bf;
+    --ok:#2e7d5b;
+    --bad:#c0492f;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .band{background:var(--navy);color:var(--white);padding:26px 20px 22px}
+  .band .inner{max-width:920px;margin:0 auto}
+  .band h1{margin:0;font-size:26px;letter-spacing:.2px}
+  .band .sub{margin:6px 0 0;color:var(--gold);font-size:14px;font-weight:600}
+  .wrap{max-width:920px;margin:0 auto;padding:22px 20px 60px}
+  .card{
+    background:var(--white);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(15,31,58,.06);
+  }
+  .card.feature{border:2px solid var(--navy);box-shadow:0 3px 10px rgba(15,31,58,.10)}
+  .card h2{margin:0 0 4px;font-size:19px;color:var(--navy)}
+  .card .hint{margin:0 0 16px;font-size:13.5px;color:#5b5f66}
+  .step-tag{
+    display:inline-block;background:var(--gold);color:var(--navy);
+    font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+    padding:3px 9px;border-radius:20px;margin-bottom:10px;
+  }
+  .step-tag.navy{background:var(--navy);color:#fff}
+  /* weekly input */
+  .income-in{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .income-in .fld{flex:1;min-width:200px}
+  .income-in label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px}
+  .money-wrap{position:relative}
+  .money-wrap .sign{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--gold-mut);font-weight:700}
+  .money-wrap input{
+    width:100%;font-size:22px;font-weight:700;padding:12px 12px 12px 30px;
+    border:1px solid var(--line);border-radius:9px;font-variant-numeric:tabular-nums;color:var(--navy);
+  }
+  input:focus{outline:2px solid var(--gold);outline-offset:1px}
+  .btn{
+    appearance:none;border:none;cursor:pointer;background:var(--navy);color:#fff;
+    font-size:15px;font-weight:700;padding:12px 20px;border-radius:9px;transition:opacity .15s;
+  }
+  .btn:hover{opacity:.9}
+  .btn.gold{background:var(--gold);color:var(--navy)}
+  /* results */
+  #results{display:none;margin-top:20px}
+  .res-grid{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .res-left{flex:1.5;min-width:300px}
+  .res-right{flex:1;min-width:238px}
+  .col-h{font-size:12px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;color:var(--gold-mut);margin:0 0 8px}
+  .col-h.instr{text-transform:none;letter-spacing:0;font-size:13px;line-height:1.4;color:var(--navy)}
+  .transfer{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #efe9d8;border-left:4px solid #ccc;background:#fff}
+  .transfer:first-child{border-top:1px solid #efe9d8}
+  .transfer .ref{background:var(--navy);color:#fff;font-weight:800;font-size:12px;padding:4px 7px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .transfer .tn{flex:1;font-weight:600;color:var(--navy);font-size:13.5px}
+  .transfer .ta{font-weight:800;color:var(--gold-mut);font-size:15.5px;font-variant-numeric:tabular-nums}
+  .done-btn{width:100%;margin-top:14px;background:var(--gold);color:var(--navy)}
+  .done-btn.done{background:#e7f4ee;color:var(--ok);cursor:default}
+  .done-msg{display:none;margin-top:10px;padding:11px 13px;border-radius:8px;background:#e7f4ee;color:var(--ok);font-weight:600;font-size:13.5px;text-align:center}
+  .done-msg.show{display:block}
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  th,td{padding:11px 12px;font-size:14.5px}
+  thead th{background:var(--navy);color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;text-align:left}
+  thead th:nth-child(2),thead th:nth-child(3){text-align:right}
+  tbody td:nth-child(2){text-align:right}
+  tbody td:nth-child(3){text-align:right}
+  tbody tr.stage td{background:#fff}
+  tbody td{border-bottom:1px solid #efe9d8}
+  td .acct{display:flex;align-items:center;gap:9px;font-weight:600;color:var(--navy)}
+  td.amt{font-weight:700;color:var(--gold-mut);font-variant-numeric:tabular-nums;font-size:16px}
+  td.pct{color:#6b7078;font-variant-numeric:tabular-nums;font-size:13px}
+  .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;display:inline-block}
+  tr.rr td{background:var(--navy)!important;color:#fff;font-weight:800}
+  tr.rr td .acct{color:#fff}
+  tr.rr td.amt{color:var(--gold);font-size:17px}
+  tr.rr td.pct{color:#c9cfd8}
+  tr.section td{background:var(--cream-lt);font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gold-mut);font-weight:700;padding:7px 12px}
+  tfoot td{padding:12px;font-weight:700;color:var(--navy);border-top:2px solid var(--navy)}
+  tfoot td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+  .note{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--cream-lt);font-size:13.5px;color:#5b5f66;border-left:4px solid var(--gold)}
+  .note.warn{background:#fbeae5;color:var(--bad);border-left-color:var(--bad)}
+  /* setup rows */
+  .pct-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f0ead9}
+  .pct-row:last-of-type{border-bottom:none}
+  .pct-row .nm{flex:1;font-weight:600;color:var(--navy);font-size:15px}
+  .pct-row .desc{display:block;font-weight:400;color:#7a7f87;font-size:12px}
+  .pct-input{width:92px;position:relative}
+  .pct-input input{width:100%;text-align:right;padding:8px 26px 8px 10px;font-size:15px;border:1px solid var(--line);border-radius:8px;font-variant-numeric:tabular-nums}
+  .pct-input .pc{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#9a9a9a;font-size:14px;pointer-events:none}
+  .pct-input.locked input{background:#f3f1ea;color:#7a7f87;cursor:not-allowed}
+  .divider{
+    display:flex;align-items:center;gap:10px;margin:16px 0 6px;
+    font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gold-mut);
+  }
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .sum-bar{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:11px 14px;border-radius:8px;font-weight:700;font-size:15px;background:var(--cream-lt)}
+  .sum-bar.ok{background:#e7f4ee;color:var(--ok)}
+  .sum-bar.bad{background:#fbeae5;color:var(--bad)}
+  .sum-bar .val{font-variant-numeric:tabular-nums}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .saved-note{font-size:13px;color:var(--ok);font-weight:600;display:none}
+  .saved-note.show{display:inline}
+  .assume{max-width:920px;margin:0 auto;padding:0 20px}
+  .assume .box{background:#fdf6e3;border:1px dashed var(--gold-mut);border-radius:10px;padding:12px 15px;margin:18px 0 0;font-size:13px;color:var(--gold-mut)}
+  .foot{max-width:920px;margin:22px auto 0;padding:0 20px;font-size:12px;color:#9a958a;text-align:center}
+  @media(max-width:560px){.band h1{font-size:22px}.pct-row .desc{display:none}}
+</style>
+</head>
+<body>
+
+<div class="band">
+  <div class="inner">
+    <h1>Profit First Allocation Calculator</h1>
+    <p class="sub">Set your percentages once - then it's 30 seconds a week.</p>
+  </div>
+</div>
+
+<div class="assume">
+  <div class="box">
+    <strong>How it works:</strong> pop in what landed in your Income account. First, <b>10% comes off for BAS</b> and your <b>Materials &amp; Subs</b> come off the top - what's left is your <b>Real Revenue</b>. Then Profit, Owner's Pay, Tax and Operating Expenses split that Real Revenue. Set your percentages once (Step 2), and each week you only touch the box below.
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- WEEKLY - now at the top -->
+  <div class="card feature">
+    <span class="step-tag navy">Every week</span>
+    <h2>This week's allocation</h2>
+    <p class="hint">Grab the balance sitting in your Income account and enter it here.</p>
+
+    <div class="income-in">
+      <div class="fld">
+        <label for="incomeBal">1. Income account balance</label>
+        <div class="money-wrap">
+          <span class="sign">$</span>
+          <input type="text" id="incomeBal" inputmode="decimal" placeholder="0.00" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn" id="calcBtn">Calculate my transfer amounts</button>
+    </div>
+
+    <div id="results">
+      <div class="res-grid">
+        <div class="res-left">
+          <div class="col-h">Here's your split</div>
+          <table>
+            <thead>
+              <tr><th>Account</th><th>%</th><th>Move</th></tr>
+            </thead>
+            <tbody id="resBody"></tbody>
+            <tfoot>
+              <tr><td>Total out of Income</td><td></td><td id="resTotal">$0.00</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="res-right">
+          <div class="col-h instr">Transfer this amount in your bank account using the description in the blue box</div>
+          <div id="transfers"></div>
+          <button class="btn done-btn" id="doneBtn">Press when bank transfers have been completed</button>
+          <div class="done-msg" id="doneMsg"></div>
+        </div>
+      </div>
+      <div class="note" id="resNote"></div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="card">
+    <span class="step-tag">Set once</span>
+    <h2>Step 2 - Your percentages</h2>
+    <p class="hint">These are the numbers you've been coached on. You only do this once - it remembers them.</p>
+
+    <div class="divider">Comes off the top (of what landed)</div>
+    <div id="topRows"></div>
+
+    <div class="divider">Splits your Real Revenue (adds up to 100%)</div>
+    <div id="rrRows"></div>
+
+    <div class="sum-bar" id="sumBar">
+      <span>Real Revenue split total</span>
+      <span class="val" id="sumVal">0%</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn gold" id="saveBtn">Save my percentages</button>
+      <span class="saved-note" id="savedNote">✓ Saved - they'll be here next week</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  &copy; Profit First for Tradies &middot; Licensed for your own business use only - please don&rsquo;t copy, resell or reproduce the method behind it.
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- Stage 1: comes off the income amount (of the money that landed) ----
+  var TOP = [
+    {key:"bas",     name:"2. BAS",              desc:"GST set-aside - 10% of what landed", color:"#E8A93C", fixed:10, locked:true},
+    {key:"matsubs", name:"3. Materials & Subs", desc:"Pass-through to suppliers & subbies - your call", color:"#E8A93C"}
+  ];
+  // ---- Stage 2: splits Real Revenue, must total 100% (coloured green - below the Real Revenue line) ----
+  var RR = [
+    {key:"profit",   name:"4. Profit",                 desc:"Cash-in-bank profit", color:"#1f6b4a"},
+    {key:"ownerspay",name:"5. Owner's Pay",            desc:"Your wage / draw", color:"#2e7d5b"},
+    {key:"tax",      name:"6. Tax",                    desc:"Income tax", color:"#3f9070"},
+    {key:"opex",     name:"7. Operating Expenses (Opex)",desc:"Overheads & running costs", color:"#57a583"}
+  ];
+  var STORE_KEY = "pfft-pf-alloc-v2";   // <-- Phase 2: the agent writes percentages into this same slot
+
+  var topRows=document.getElementById("topRows"), rrRows=document.getElementById("rrRows");
+  var sumBar=document.getElementById("sumBar"), sumVal=document.getElementById("sumVal");
+  var saveBtn=document.getElementById("saveBtn"), savedNote=document.getElementById("savedNote");
+  var calcBtn=document.getElementById("calcBtn"), incomeBal=document.getElementById("incomeBal");
+  var results=document.getElementById("results"), resBody=document.getElementById("resBody");
+  var resTotal=document.getElementById("resTotal"), resNote=document.getElementById("resNote");
+  var transfers=document.getElementById("transfers");
+  var doneBtn=document.getElementById("doneBtn"), doneMsg=document.getElementById("doneMsg");
+
+  function num(v){var n=parseFloat(String(v).replace(/[^0-9.\-]/g,""));return isNaN(n)?0:n;}
+  function money(n){return "$"+n.toLocaleString("en-AU",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function r2(n){return Math.round(n*100)/100;}
+
+  function makeRow(a){
+    var row=document.createElement("div");row.className="pct-row";
+    var val = a.fixed!==undefined ? a.fixed : "";
+    row.innerHTML =
+      '<span class="dot" style="background:'+a.color+'"></span>'+
+      '<span class="nm">'+a.name+'<span class="desc">'+a.desc+'</span></span>'+
+      '<span class="pct-input'+(a.locked?' locked':'')+'"><input type="text" inputmode="decimal" data-key="'+a.key+'" value="'+val+'" placeholder="0"'+(a.locked?' readonly':'')+'><span class="pc">%</span></span>';
+    return row;
+  }
+  TOP.forEach(function(a){topRows.appendChild(makeRow(a));});
+  RR.forEach(function(a){rrRows.appendChild(makeRow(a));});
+
+  var rrInputs = rrRows.querySelectorAll("input");
+  var matsubsInput = topRows.querySelector('input[data-key="matsubs"]');
+  var editable = Array.prototype.slice.call(rrRows.querySelectorAll("input")).concat([matsubsInput]);
+
+  function refreshSum(){
+    var total=0; rrInputs.forEach(function(i){total+=num(i.value);});
+    var disp=r2(total); sumVal.textContent=disp+"%";
+    sumBar.classList.remove("ok","bad");
+    if(Math.abs(disp-100)<0.01){sumBar.classList.add("ok");}
+    else if(total>0){sumBar.classList.add("bad");}
+    return disp;
+  }
+  editable.forEach(function(i){i.addEventListener("input",function(){refreshSum();savedNote.classList.remove("show");});});
+
+  function save(){
+    var data={};
+    matsubsInput && (data.matsubs=num(matsubsInput.value));
+    rrInputs.forEach(function(i){data[i.getAttribute("data-key")]=num(i.value);});
+    try{localStorage.setItem(STORE_KEY,JSON.stringify(data));}catch(e){}
+    savedNote.classList.add("show");
+  }
+  function load(){
+    var raw; try{raw=localStorage.getItem(STORE_KEY);}catch(e){raw=null;}
+    if(!raw)return; var data; try{data=JSON.parse(raw);}catch(e){return;}
+    editable.forEach(function(i){
+      var k=i.getAttribute("data-key");
+      if(data[k]!==undefined&&data[k]!==null){i.value=data[k];}
+    });
+    refreshSum();
+  }
+  saveBtn.addEventListener("click",save);
+
+  function pctFor(key){
+    if(key==="bas") return 10;
+    var el = document.querySelector('input[data-key="'+key+'"]');
+    return el?num(el.value):0;
+  }
+
+  function calc(){
+    var bal=num(incomeBal.value);
+    var msPct=pctFor("matsubs");
+    var basAmt=r2(bal*10/100);
+    var msAmt =r2(bal*msPct/100);
+    var realRev=r2(bal-basAmt-msAmt);
+
+    // ordered transfer list: from account 1 (Income) into accounts 2..7
+    var moves=[
+      {n:2,name:"BAS",              color:"#E8A93C",amt:basAmt},
+      {n:3,name:"Materials & Subs", color:"#E8A93C",amt:msAmt}
+    ];
+
+    resBody.innerHTML="";
+    function push(cls,name,color,pctTxt,amt){
+      var tr=document.createElement("tr"); if(cls)tr.className=cls;
+      tr.innerHTML =
+        '<td><span class="acct">'+(color?'<span class="dot" style="background:'+color+'"></span>':'')+name+'</span></td>'+
+        '<td class="pct">'+pctTxt+'</td>'+
+        '<td class="amt">'+money(amt)+'</td>';
+      resBody.appendChild(tr);
+    }
+    function pushSection(label){
+      var tr=document.createElement("tr");tr.className="section";
+      tr.innerHTML='<td colspan="3">'+label+'</td>';resBody.appendChild(tr);
+    }
+
+    pushSection("Off the top");
+    push("stage","2. BAS","#E8A93C","10%",basAmt);
+    push("stage","3. Materials & Subs","#E8A93C",msPct+"%",msAmt);
+
+    // Real Revenue divider row
+    var rrTr=document.createElement("tr");rrTr.className="rr";
+    rrTr.innerHTML='<td><span class="acct">= Real Revenue</span></td><td class="pct"></td><td class="amt">'+money(realRev)+'</td>';
+    resBody.appendChild(rrTr);
+
+    pushSection("Split of Real Revenue");
+    var rrTotal=0, rrSumPct=0;
+    RR.forEach(function(a,idx){
+      var p=pctFor(a.key); rrSumPct+=p;
+      var amt=r2(realRev*p/100); rrTotal+=amt;
+      push("stage",a.name,a.color,p+"% of RR",amt);
+      moves.push({n:4+idx,name:a.name.replace(/^\d+\.\s*/,''),color:a.color,amt:amt});
+    });
+    rrTotal=r2(rrTotal);
+
+    var totalMoved=r2(basAmt+msAmt+rrTotal);
+    resTotal.textContent=money(totalMoved);
+
+    // ---- transfers panel (the actual bank moves: 1 -> N) ----
+    transfers.innerHTML="";
+    moves.forEach(function(m){
+      var d=document.createElement("div");
+      d.className="transfer"; d.style.borderLeftColor=m.color;
+      d.innerHTML='<span class="ref">1-'+m.n+'</span><span class="tn">'+m.name+'</span><span class="ta">'+money(m.amt)+'</span>';
+      transfers.appendChild(d);
+    });
+    // fresh week - reset the "completed" button
+    doneBtn.classList.remove("done");
+    doneBtn.disabled=false;
+    doneBtn.textContent="Press when bank transfers have been completed";
+    doneMsg.classList.remove("show");
+
+    resNote.classList.remove("warn");
+    if(realRev<0){
+      resNote.classList.add("warn");
+      resNote.innerHTML="⚠️ BAS + Materials &amp; Subs is more than what landed - your Real Revenue is negative. Check the Materials &amp; Subs % in Step 2.";
+    } else if(Math.abs(rrSumPct-100)>0.01){
+      resNote.classList.add("warn");
+      resNote.innerHTML="⚠️ Your Real Revenue split adds up to <b>"+r2(rrSumPct)+"%</b>, not 100%. Fix it in Step 2 so every dollar of Real Revenue has a home.";
+    } else {
+      var leftover=r2(bal-totalMoved);
+      if(Math.abs(leftover)<0.005){
+        resNote.innerHTML="✓ Income clears to <b>$0.00</b> - fully allocated. Real Revenue this week: <b>"+money(realRev)+"</b>.";
+      } else {
+        resNote.innerHTML="A few cents (<b>"+money(leftover)+"</b>) rounding - sweep it into Profit or leave as a buffer. Real Revenue this week: <b>"+money(realRev)+"</b>.";
+      }
+    }
+    results.style.display="block";
+  }
+  calcBtn.addEventListener("click",calc);
+  incomeBal.addEventListener("keydown",function(e){if(e.key==="Enter"){calc();}});
+
+  doneBtn.addEventListener("click",function(){
+    doneBtn.classList.add("done");
+    doneBtn.disabled=true;
+    doneBtn.textContent="✓ Transfers completed";
+    var now=new Date();
+    var stamp=now.toLocaleDateString("en-AU",{weekday:"long",day:"numeric",month:"long"});
+    doneMsg.innerHTML="✓ Nice work - you're allocated for the week. Logged "+stamp+".";
+    doneMsg.classList.add("show");
+    try{localStorage.setItem("pfft-pf-alloc-lastdone",now.toISOString());}catch(e){}
+  });
+
+  refreshSum();
+  load();
+})();
+</script>
+</body>
+</html>
