@@ -88,6 +88,7 @@
 (function(){
   "use strict";
   var ENDPOINT = "https://script.google.com/macros/s/AKfycbwYXeZvxpVRiolLD54JYf1414nbS6S9Jb0SqyzgAE6uhFK4DFbNvyyaPFKOAqGlGF9NWA/exec";
+  var TOKEN = "88d81e4b01adae4478b864f9b46f7912746dee661195c473";   // spam gate (also in the calculator; not a secret)
   var params, BUILDER=""; try{ params=new URLSearchParams(location.search); BUILDER=params.get("b")||""; }catch(e){}
 
   // button -> the Weekly Allocation Calculator (same Pages folder, index.html), same builder
@@ -110,7 +111,14 @@
 
   // "Do the Profit Assessment" -> for now, tell them it routes to Katie for verification
   var modal=document.getElementById("modal");
-  document.getElementById("doasmt").addEventListener("click",function(){modal.classList.add("show");});
+  document.getElementById("doasmt").addEventListener("click",function(){
+    modal.classList.add("show");
+    // send the request to the store (logs it + emails Katie); fire-and-forget
+    if(BUILDER){
+      try{ fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({type:"request_assessment",token:TOKEN,b:BUILDER})}); }catch(e){}
+    }
+  });
   document.getElementById("modalClose").addEventListener("click",function(){modal.classList.remove("show");});
   modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.remove("show");});
   if(!BUILDER){ state.textContent="Open this from your personal link so we know it's you."; return; }
