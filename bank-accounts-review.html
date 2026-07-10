@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Your Bank Accounts</title>
+<style>
+  :root{--navy:#0F1F3A;--cream:#ECE7D8;--cream-lt:#F3ECD8;--gold:#E8A93C;--gold-mut:#8A6D2F;--line:#d9d2bf;--ink:#22252b;--ok:#2e7d5b;--miss:#b3521e;--white:#fff;}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .band{background:var(--navy);color:#fff;padding:26px 20px 22px}
+  .band .inner{max-width:760px;margin:0 auto}
+  .band h1{margin:0;font-size:25px}
+  .band .sub{margin:6px 0 0;color:var(--gold);font-size:14px;font-weight:600}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 20px 60px}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:18px;box-shadow:0 1px 3px rgba(15,31,58,.06)}
+  .card h2{margin:0 0 4px;font-size:18px;color:var(--navy)}
+  .card .hint{margin:0 0 14px;font-size:13.5px;color:#5b5f66}
+  .score{display:flex;align-items:baseline;gap:10px;margin:2px 0 4px}
+  .score b{font-size:30px;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1}
+  .score span{font-size:14px;color:#5b5f66;font-weight:600}
+  .bar{height:9px;background:#efe8d6;border-radius:6px;overflow:hidden;margin:10px 0 4px}
+  .bar i{display:block;height:100%;background:var(--ok);border-radius:6px;transition:width .5s}
+  .asof{font-size:12.5px;color:#7a7f87;font-weight:600;margin:8px 0 0}
+  .asof b{color:var(--navy)}
+  .arow{display:flex;align-items:flex-start;gap:13px;padding:13px 0;border-bottom:1px solid #f0ead9}
+  .arow:last-child{border-bottom:none}
+  .num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .arow.miss .num{background:#d7cdb4;color:#fff}
+  .amid{flex:1;min-width:0}
+  .amid .nm{font-weight:700;color:var(--navy);font-size:15.5px}
+  .amid .wt{color:#7a7f87;font-size:12.5px;margin-top:1px}
+  .amid .mt{color:#5b5f66;font-size:12.5px;margin-top:3px;font-weight:600}
+  .amid .mt b{color:var(--navy);font-weight:700}
+  .pill{flex:0 0 auto;font-size:11.5px;font-weight:800;padding:5px 10px;border-radius:999px;white-space:nowrap;margin-top:2px}
+  .pill.ok{background:#e4f0e9;color:var(--ok)}
+  .pill.no{background:#f6e6da;color:var(--miss)}
+  .extras{margin-top:6px}
+  .extras .lbl{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--gold-mut);margin-bottom:8px}
+  .extras ul{margin:0;padding:0;list-style:none}
+  .extras li{padding:7px 0;border-bottom:1px solid #f4eedd;font-size:14px;color:var(--navy);font-weight:600}
+  .extras li:last-child{border-bottom:none}
+  .extras .note{margin:10px 0 0;font-size:12.5px;color:#7a7f87}
+  .allset{background:#e4f0e9;border:1px solid #bfe0cd;border-radius:10px;padding:13px 16px;color:var(--ok);font-weight:700;font-size:14.5px;margin-top:4px}
+  .gobtn{display:block;width:100%;text-align:center;text-decoration:none;background:var(--gold);color:var(--navy);font-size:16px;font-weight:800;padding:15px;border-radius:10px;margin-top:4px}
+  .gobtn:hover{opacity:.92}
+  .reqbtn{display:block;width:100%;text-align:center;cursor:pointer;background:#fff;border:2px solid var(--navy);color:var(--navy);font-size:15px;font-weight:800;padding:13px;border-radius:10px;margin-top:12px}
+  .reqbtn:hover{background:var(--cream-lt)}
+  .reqbtn:disabled{opacity:.55;cursor:default}
+  .modal{display:none;position:fixed;inset:0;background:rgba(15,31,58,.55);align-items:center;justify-content:center;padding:20px;z-index:10}
+  .modal.show{display:flex}
+  .modal .box{background:#fff;border-radius:14px;max-width:430px;padding:26px 24px;text-align:center;box-shadow:0 12px 44px rgba(0,0,0,.3)}
+  .modal .box h3{margin:0 0 10px;color:var(--navy);font-size:19px}
+  .modal .box p{margin:0 0 18px;color:#5b5f66;font-size:15px;line-height:1.5}
+  .modal .box button{appearance:none;border:none;cursor:pointer;background:var(--navy);color:#fff;font-weight:700;font-size:14px;padding:11px 24px;border-radius:9px}
+  .state{text-align:center;color:#5b5f66;font-size:14.5px;padding:24px 10px}
+  .foot{max-width:760px;margin:22px auto 0;padding:0 20px;font-size:12px;color:#9a958a;text-align:center}
+  #content{display:none}
+</style>
+</head>
+<body>
+
+<div class="band"><div class="inner">
+  <h1>Your Bank Accounts</h1>
+  <p class="sub">The 7 accounts every Profit First business runs - and how yours line up.</p>
+</div></div>
+
+<div class="wrap">
+  <div class="card">
+    <div class="state" id="state">Loading your accounts...</div>
+    <div id="content">
+      <div class="score"><b id="count">-</b><span>of the 7 Profit First accounts set up</span></div>
+      <div class="bar"><i id="barfill" style="width:0%"></i></div>
+      <p class="asof" id="asof"></p>
+    </div>
+  </div>
+
+  <div class="card" id="listcard" style="display:none">
+    <h2>The Profit First 7</h2>
+    <p class="hint">Every dollar has a home. A green tick means you've already got that account - a flag means it's the next one to set up.</p>
+    <div id="list"></div>
+  </div>
+
+  <div class="card extras" id="extrascard" style="display:none">
+    <div class="lbl">Unmatched bank accounts</div>
+    <ul id="extras"></ul>
+    <p class="note">These didn't line up with one of the 7 - usually that's fine (credit cards, savings or clearing accounts). If one of these is really meant to be a Profit First account, Katie will rename it in your Xero so it's crystal clear.</p>
+  </div>
+
+  <a class="gobtn" id="gobtn" href="#">Open my Weekly Allocation Calculator &rarr;</a>
+  <button class="reqbtn" id="reqbtn">Request a bank-account check</button>
+</div>
+
+<div class="modal" id="modal"><div class="box">
+  <h3>Check requested</h3>
+  <p>Nice one. Katie will look over your bank accounts against the Profit First 7 and update this page - hang tight, you don't need to do anything else.</p>
+  <button id="modalClose">Got it</button>
+</div></div>
+
+<div class="foot">
+  &copy; Profit First for Tradies &middot; Your bank-account plan, for your own business use.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var ENDPOINT = "https://script.google.com/macros/s/AKfycbyRTFAKLbFje84IfvibvNdO9pBTb4LqPCnjYOBO4NpqlxA3QD_y_qcSoOAOrIOxwNpePA/exec";
+  var TOKEN = "88d81e4b01adae4478b864f9b46f7912746dee661195c473";  // spam gate (also in Code.gs) - not a secret
+
+  // The canonical 7 (names + what-for live client-side; the store only tells us
+  // which ones the builder HAS and their matched Xero account name).
+  // title = the standard Xero account name (numbered); wt = what it's for.
+  var CANON = [
+    {n:1, nm:"1. Income",             wt:"All money in, before you allocate it out"},
+    {n:2, nm:"2. BAS",                wt:"GST + PAYG withholding set aside - separate from Tax"},
+    {n:3, nm:"3. Materials & Subs",   wt:"Pass-through costs to suppliers & subcontractors"},
+    {n:4, nm:"4. Profit",             wt:"Cash-in-bank profit - what you actually keep"},
+    {n:5, nm:"5. Owner's Pay",        wt:"Your wage / owner's draw"},
+    {n:6, nm:"6. Tax",                wt:"Income tax set aside - separate from BAS"},
+    {n:7, nm:"7. Operating Expenses", wt:"Overheads & day-to-day running costs"}
+  ];
+
+  var params, BUILDER=""; try{ params=new URLSearchParams(location.search); BUILDER=params.get("b")||""; }catch(e){}
+  var gobtn=document.getElementById("gobtn");
+  gobtn.href = BUILDER ? ("./?b="+encodeURIComponent(BUILDER)) : "./";
+
+  // "Request a bank-account check" -> fire-and-forget to the store queue, show modal.
+  var modal=document.getElementById("modal"), reqbtn=document.getElementById("reqbtn");
+  document.getElementById("modalClose").addEventListener("click",function(){modal.classList.remove("show");});
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.remove("show");});
+  reqbtn.addEventListener("click",function(){
+    if(!BUILDER){ modal.querySelector("p").textContent="Open this from your personal link so we know who to check."; modal.classList.add("show"); return; }
+    try{
+      fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({type:"add_bank_request",token:TOKEN,b:BUILDER})}).catch(function(){});
+    }catch(e){}
+    reqbtn.disabled=true; reqbtn.textContent="Check requested ✓";
+    modal.classList.add("show");
+  });
+
+  var state=document.getElementById("state"), content=document.getElementById("content");
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+  function render(bank){
+    var have = bank.have || [], matched = bank.matched || [], extras = bank.extras || [];
+    var count = 0; for(var i=0;i<have.length;i++){ if(have[i]) count++; }
+
+    document.getElementById("count").textContent = count + " / 7";
+    document.getElementById("barfill").style.width = Math.round(count/7*100)+"%";
+
+    var asof=document.getElementById("asof");
+    if(bank.updated_at){
+      var d=new Date(bank.updated_at);
+      if(!isNaN(d.getTime())) asof.innerHTML="Checked from your Xero file on <b>"+d.toLocaleDateString("en-AU",{day:"numeric",month:"long",year:"numeric"})+"</b>";
+    }
+
+    var html="";
+    CANON.forEach(function(c,i){
+      var has = !!have[i], m = matched[i]||"";
+      var showTheirs = has && m && m !== c.nm;
+      html += '<div class="arow'+(has?"":" miss")+'">'
+            +   '<div class="num">'+(has?'&#10003;':'&middot;')+'</div>'
+            +   '<div class="amid"><div class="nm">'+esc(c.nm)+'</div>'
+            +     '<div class="wt">'+esc(c.wt)+'</div>'
+            +     (showTheirs ? '<div class="mt">In your Xero: <b>'+esc(m)+'</b></div>' : '')
+            +   '</div>'
+            +   (has ? '<span class="pill ok">&#10003; Set up</span>'
+                    : '<span class="pill no">Not set up yet</span>')
+            + '</div>';
+    });
+    document.getElementById("list").innerHTML = html;
+    document.getElementById("listcard").style.display = "block";
+
+    if(count === 7){
+      var lc=document.getElementById("listcard");
+      var done=document.createElement("div");
+      done.className="allset";
+      done.innerHTML="&#10003; Nice work - all 7 Profit First accounts are set up.";
+      lc.insertBefore(done, document.getElementById("list"));
+    }
+
+    if(extras.length){
+      var ul=document.getElementById("extras");
+      ul.innerHTML = extras.map(function(e){ return "<li>"+esc(e)+"</li>"; }).join("");
+      document.getElementById("extrascard").style.display="block";
+    }
+
+    state.style.display="none"; content.style.display="block";
+  }
+
+  // Preview hook: a local preview file sets window.__BANK to real data so Katie
+  // can see the exact rendering before the store serves bank reviews. Harmless
+  // in production (undefined -> falls through to the live JSONP read).
+  if (typeof window.__BANK !== "undefined" && window.__BANK) { render(window.__BANK); return; }
+
+  if(!BUILDER){ state.textContent="Open this from your personal link so we know it's you."; return; }
+
+  var cb="__bk_"+Math.floor(Math.random()*1e9);
+  var s=document.createElement("script");
+  function cleanup(){ try{delete window[cb];}catch(e){window[cb]=undefined;} if(s.parentNode)s.parentNode.removeChild(s); }
+  window[cb]=function(resp){
+    if(resp && resp.ok && resp.bank && resp.bank.have){ render(resp.bank); }
+    else { state.textContent="Your bank-account review is being set up with Katie - check back soon."; }
+    cleanup();
+  };
+  s.onerror=function(){ state.textContent="Couldn't load your accounts just now - please refresh."; cleanup(); };
+  s.src=ENDPOINT+(ENDPOINT.indexOf("?")>=0?"&":"?")+"b="+encodeURIComponent(BUILDER)+"&scope=bank&callback="+cb;
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
